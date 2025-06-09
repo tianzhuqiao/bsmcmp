@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=67.6.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bsmcmp"
+authors = [
+  { name="Tianzhu Qiao", email="tq@feiyilin.com" },
+]
+license = {file = "LICENSE"}
+description='bsmcmp is a tool to compare files'
+readme = "README.md"
+requires-python = ">=3.0"
+classifiers = [
+    "Operating System :: OS Independent",
+]
+dependencies = [
+          'numpy', 'scipy', 'click>=8.1', 'pandas', 'netCDF4', 'charset_normalizer',
+          'h5py', 'packaging'
+      ]
+dynamic = ["version"]
+
+[tool.setuptools.dynamic]
+version = {attr = "bsmcmp.__version__"}
+
+[project.urls]
+"Homepage" = "https://github.com/tianzhuqiao/bsmcmp"
+
+[project.gui-scripts]
+bsmcmp = "bsmcmp.__main__:cli"
+
+[tool.setuptools.packages]
+find = {}
+
+
+[options]
+include_package_data = true
