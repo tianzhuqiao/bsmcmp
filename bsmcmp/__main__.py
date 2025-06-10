@@ -15,5 +15,24 @@ try:
 except:
     pass
 
+try:
+    from .h5 import test_h5
+    cli.add_command(test_h5)
+except:
+    pass
+
+try:
+    from .mat import test_mat
+    cli.add_command(test_mat)
+except:
+    pass
+
+from .csv import test_csv
+try:
+    from .csv import test_csv
+    cli.add_command(test_csv)
+except:
+    pass
+
 if __name__ == '__main__':
     cli()

@@ -1,15 +1,13 @@
-import click
 from charset_normalizer import detect
 
-from .base import TestBase, common_options
+from .base import TestBase
 
 class TestAscii(TestBase):
     NAME = "ascii"
-    def __init__(self):
-        super().__init__()
-        self.ext = ".asc"
+    EXT = '.txt'
 
     def open_ascii(self, filename):
+        encoding = 'utf-8'
         with open(filename.strip(), 'rb') as fp:
             raw = fp.read()
             encoding = detect(raw)['encoding']
@@ -34,17 +32,6 @@ class TestAscii(TestBase):
         return match
 
 
-@click.command('ascii', context_settings={'show_default': True})
-@common_options('.asc', 'ASCII')
+@TestAscii.click_command()
 def test_ascii(**kwargs):
-    test = TestAscii()
-    kwargs = test.load_config(**kwargs)
-    if kwargs['file1'] is not None and kwargs['file2'] is not None:
-        test.stop_on_mismatch = False
-        test.verbose = True
-        test.test(kwargs['file1'], kwargs['file2'])
-        test.show_result()
-        return
-    if kwargs['folder1'] is not None and kwargs['folder2'] is not None:
-        test.verbose = False
-        test.test_all(kwargs['folder1'], kwargs['folder2'])
+    TestAscii.run(**kwargs)
