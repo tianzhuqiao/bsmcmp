@@ -183,17 +183,18 @@ class TestBaseGroup(TestBase):
 
         if not match:
             self.error(f"{indent}data: fail")
-            err = np.abs(d1[:]-d2[:])
+            err = np.abs(d1 - d2)
             w = np.argwhere(err == np.max(err))
             n_zero_err = np.sum((err.flatten() == 0))
             n_all = len(err.flatten())
 
-            self.error(f"{indent}       max error: {np.nanmax(err)} at {np.argwhere(err == np.max(err))}")
-            self.error(f"{indent}              d1: {d1[:][tuple(w[0])]}")
-            self.error(f"{indent}              d2: {d2[:][tuple(w[0])]}")
-            self.error(f"{indent}       avg error: {np.nanmean(err)}")
-            self.error(f"{indent}       std error: {np.nanstd(err)}")
-            self.error(f"{indent}      0 error(%): {n_zero_err}/{n_all} = {n_zero_err/n_all}")
+            self.error(f"{indent}    max error: {np.nanmax(err):.6g} at")
+            self.error(f"{indent}              " + str(w).replace('\n', f'\n{indent}              '))
+            self.error(f"{indent}        d1[0]: {d1[tuple(w[0])]}")
+            self.error(f"{indent}        d2[0]: {d2[tuple(w[0])]}")
+            self.error(f"{indent}    avg error: {np.nanmean(err):.6g}")
+            self.error(f"{indent}    std error: {np.nanstd(err):.6g}")
+            self.error(f"{indent}      0 error: {n_zero_err/n_all*100:.4f}% ({n_zero_err}/{n_all})")
 
         else:
             self.success(f"{indent}data: pass")
@@ -310,7 +311,7 @@ class TestBaseAttr(TestBaseGroup):
     def load_config(self, **kwargs):
         kwargs = super().load_config(**kwargs)
         self.stop_on_attr_mismatch = kwargs.get('stop_on_attr_mismatch', self.stop_on_attr_mismatch)
-        self.ignore_attributes = kwargs.get('ignore_att', [])
+        self.ignore_attributes = kwargs.get('ignore_attr', [])
         return kwargs
 
     def test_all(self, folder1, folder2):
@@ -336,5 +337,5 @@ class TestBaseAttr(TestBaseGroup):
     def get_options(cls):
         return super().get_options() + [
                 click.option('--stop_on_attr_mismatch', is_flag=True, default=False, help='Stop when see any attribute mismatch'),
-                click.option('--ignore_att', multiple=True, help='attributes to be ignored')
+                click.option('--ignore_attr', multiple=True, help='attributes to be ignored')
                 ]
