@@ -8,6 +8,9 @@ $ pip install bsmcmp
 
 ## Supported file formats
 - ASCII
+- CSV
+- [HDF5](https://docs.h5py.org/en/stable/)
+- Matlab (.mat)
 - [netCDF](https://unidata.github.io/netcdf4-python/)
 
 ## Usage
@@ -21,8 +24,8 @@ To compare all files in two folders (assume both folders have the same structure
 $ bsmcmp netcdf --folder1 file1.nc --folder file2.nc
 ```
 
+See `bsmcmp --help` or `bsmcmp COMMAND --help` for details
 ```
-% bsmcmp --help
 Usage: bsmcmp [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -31,5 +34,8 @@ Options:
 
 Commands:
   ascii
+  csv
+  hdf5
+  matlab
   netcdf
   ```
