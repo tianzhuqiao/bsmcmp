@@ -26,7 +26,9 @@ class TestNetcdf(TestBaseAttr):
         match_data = True
         match_data = len(group1.variables) == len(group2.variables)
         for k in group1.variables:
-            self.echo(k)
+            self.start_message_delay()
+
+            self.error(k, fg=None)
             if self.has_pattern(k, self.ignore_variables):
                 self.warning(f"{indent}    ignore")
                 continue
@@ -43,13 +45,16 @@ class TestNetcdf(TestBaseAttr):
             if not self.check_data(d1, d2, indent+'    '):
                 match_data = False
 
+            self.end_message_delay()
+
         # check subgroups
         if len(group1.groups) != len(group2.groups):
             match_data = False
         for k, g in group1.groups.items():
             if k not in group2.groups:
                 match_data = False
-                self.error(f"{k} not found in 2nd file", bg='red')
+                self.error(f"{k} not found in 2nd file")
+                continue
             group_data, group_attr = self.check_group(g, group2[k], indent+'    ')
             match_data = match_data and group_data
             match_attr = match_data and group_attr

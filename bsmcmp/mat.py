@@ -43,7 +43,9 @@ class TestMat(TestBaseGroup):
         match_data = len(group1) == len(group2)
 
         for k, v in group1.items():
-            self.echo(k)
+            self.start_message_delay()
+
+            self.error(k)
             if self.has_pattern(k, self.ignore_variables):
                 self.warning(f"{indent}    ignore")
                 continue
@@ -60,6 +62,8 @@ class TestMat(TestBaseGroup):
             else:
                 if not self.check_data(d1, d2, indent+'    '):
                     match_data = False
+
+            self.end_message_delay()
 
         return match_data
 

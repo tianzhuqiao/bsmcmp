@@ -23,7 +23,9 @@ class TestHDF5(TestBaseAttr):
         match_data = True
         match_data = len(group1) == len(group2)
         for k, v in group1.items():
-            self.echo(k)
+            self.start_message_delay()
+
+            self.error(k)
             if self.has_pattern(k, self.ignore_variables):
                 self.warning(f"{indent}    ignore")
                 continue
@@ -43,6 +45,8 @@ class TestHDF5(TestBaseAttr):
 
                 if not self.check_attr(d1, d2, indent+'    '):
                     match_attr = False
+
+            self.end_message_delay()
 
         return match_data, match_attr
 

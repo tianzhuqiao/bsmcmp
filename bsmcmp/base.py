@@ -12,8 +12,16 @@ import tqdm
 class TestBase:
     NAME = "base"
     EXT = ".*"
+    LOG_NONE = 0
+    LOG_ERROR = 1
+    LOG_WARN = 2
+    LOG_INFO = 3
+    LOG_DEBUG = 4
+    LOG_MAX = 5
+    LOG_AUTO = 6
+
     def __init__(self):
-        self.verbose = True
+        self.verbose = self.LOG_INFO
         self.ext = self.EXT
         self.stop_on_mismatch = True
         self.file_count = 0
@@ -22,21 +30,58 @@ class TestBase:
         self.ignore_pattern = []
         self.recursive = True
         self.tqdm_mode = False
+        self._msgs = []
+        self.message_delay = 0
+
+    def _verbose(self, kwargs):
+        return kwargs.pop('verbose', 0) or self.verbose
+
+    def start_message_delay(self):
+        self.message_delay += 1
+
+    def end_message_delay(self, min_msg_to_flush=2):
+        self.message_delay -= 1
+        if self.message_delay == 0:
+            if len(self._msgs) >= min_msg_to_flush:
+                self.flush()
+            self._msgs = []
+
+    def flush(self):
+        for args, kwargs in self._msgs:
+            self._echo(*args, **kwargs)
+        self._msgs = []
 
     def echo(self, *args, **kwargs):
-        verbose = kwargs.pop('verbose', False) or self.verbose
-        if verbose:
-            if not self.tqdm_mode:
-                click.secho(*args, **kwargs)
-            else:
-                tqdm.tqdm.write(*args)
+        if self.message_delay:
+            self._msgs.append([args, kwargs])
+            return
+        self._echo(*args, **kwargs)
+
+    def _echo(self, *args, **kwargs):
+        if not self.tqdm_mode:
+            click.secho(*args, **kwargs)
+        else:
+            end = '\n'
+            if not kwargs.get('nl', True):
+                end = ''
+            kwargs.pop('nl', None)
+            tqdm.tqdm.write(click.style(*args, **kwargs), end=end)
+
+    def info(self, *args, **kwargs):
+        if self._verbose(kwargs) < self.LOG_INFO:
+            return
+        self.echo(*args, **kwargs)
 
     def error(self, *args, **kwargs):
+        if self._verbose(kwargs) < self.LOG_ERROR:
+            return
         if 'fg' not in kwargs:
             kwargs['fg'] = 'red'
         self.echo(*args, **kwargs)
 
     def warning(self, *args, **kwargs):
+        if self._verbose(kwargs) < self.LOG_WARN:
+            return
         if 'fg' not in kwargs:
             kwargs['fg'] = 'blue'
         self.echo(*args, **kwargs)
@@ -44,7 +89,7 @@ class TestBase:
     def success(self, *args, **kwargs):
         if 'fg' not in kwargs:
             kwargs['fg'] = 'green'
-        self.echo(*args, **kwargs)
+        self.info(*args, **kwargs)
 
     def test(self, file1, file2):
         self.file_count += 1
@@ -64,8 +109,12 @@ class TestBase:
         return self.has_pattern(filename, self.ignore_pattern)
 
     def show_result(self):
-        self.echo(f'{self.file_count} files checked!', verbose=True)
-        self.echo(f'    mismatch: {self.mismatch_count}', verbose=True)
+        self.info(f'{self.file_count} files checked!', verbose=self.LOG_MAX)
+        self.info('    mismatch: ', nl=False, verbose=self.LOG_MAX)
+        if self.mismatch_count > 0:
+            self.error(f'{self.mismatch_count}', verbose=self.LOG_MAX)
+        else:
+            self.success(f'{self.mismatch_count}', verbose=self.LOG_MAX)
 
     def test_all(self, folder1, folder2):
         self._stop = False
@@ -74,25 +123,31 @@ class TestBase:
             for filename in tqdm.tqdm(glob.iglob(f'{folder1}/**/*{self.ext}', recursive=self.recursive)):
                 if self.shall_stop():
                     break
+
                 file1 = filename
                 file2 = filename.replace(folder1, folder2)
 
                 if self.shall_ignore(filename):
                     continue
-
+                self.error(f"\n#{self.file_count}", fg=None)
+                self.error(file1, fg=None)
+                self.error(file2, fg=None)
                 if not os.path.isfile(file2):
                     self.warning(f"can't find file: {file2}")
                     continue
                 try:
                     match = self.test(file1, file2)
-                    if not match:
-                        self.echo(file1, verbose=True)
-                        self.echo(file2, verbose=True)
+                    if not match and self.verbose == self.LOG_NONE:
+                        self.info(f"\n#{self.mismatch_count} mismatch", verbose=self.LOG_MAX)
+                        self.info(file1, verbose=self.LOG_MAX)
+                        self.info(file2, verbose=self.LOG_MAX)
                 except:
-                    self.echo(file1, verbose=True)
-                    self.echo(file2, verbose=True)
+                    if self.verbose == self.LOG_NONE:
+                        self.info(file1, verbose=self.LOG_MAX)
+                        self.info(file2, verbose=self.LOG_MAX)
                     traceback.print_exc()
                     break
+
 
             self.tqdm_mode = False
             self.show_result()
@@ -115,6 +170,7 @@ class TestBase:
                 self.error(f"Fail to load {kwargs['config']}", verbose=True)
                 traceback.print_exc()
 
+        self.verbose = kwargs.get('verbose', self.verbose)
         self.ext = kwargs.get('ext', self.ext)
         self.stop_on_mismatch = kwargs.get('stop_on_mismatch', self.stop_on_mismatch)
         self.ignore_pattern = kwargs.get('ignore_pattern', self.ignore_pattern)
@@ -127,17 +183,20 @@ class TestBase:
         kwargs = test.load_config(**kwargs)
         if kwargs['file1'] is not None and kwargs['file2'] is not None:
             test.stop_on_mismatch = False
-            test.verbose = True
+            if test.verbose == test.LOG_AUTO:
+                test.verbose = test.LOG_INFO
             test.test(kwargs['file1'], kwargs['file2'])
             test.show_result()
             return
         if kwargs['folder1'] is not None and kwargs['folder2'] is not None:
-            test.verbose = False
+            if test.verbose == test.LOG_AUTO:
+                test.verbose = test.LOG_NONE
             test.test_all(kwargs['folder1'], kwargs['folder2'])
 
     @classmethod
     def get_options(cls):
         return [
+                click.option('-v', '--verbose', default=cls.LOG_AUTO, count=True),
                 click.option('--ext', default=cls.EXT, help=f'the {cls.NAME} file extention'),
                 click.option('--file1', type=click.Path(exists=True, dir_okay=False), help=f'1nd {cls.NAME} file.'),
                 click.option('--file2', type=click.Path(exists=True, dir_okay=False), help=f'2nd {cls.NAME} file.'),
@@ -182,22 +241,24 @@ class TestBaseGroup(TestBase):
             match = False
 
         if not match:
-            self.error(f"{indent}data: fail")
+            self.error(f"{indent}data: ", fg=None, nl=False)
+            self.error("fail")
             err = np.abs(d1 - d2)
             w = np.argwhere(err == np.max(err))
             n_zero_err = np.sum((err.flatten() == 0))
             n_all = len(err.flatten())
 
-            self.error(f"{indent}    max error: {np.nanmax(err):.6g} at")
-            self.error(f"{indent}              " + str(w).replace('\n', f'\n{indent}              '))
-            self.error(f"{indent}        d1[0]: {d1[tuple(w[0])]}")
-            self.error(f"{indent}        d2[0]: {d2[tuple(w[0])]}")
-            self.error(f"{indent}    avg error: {np.nanmean(err):.6g}")
-            self.error(f"{indent}    std error: {np.nanstd(err):.6g}")
-            self.error(f"{indent}      0 error: {n_zero_err/n_all*100:.4f}% ({n_zero_err}/{n_all})")
+            self.error(f"{indent}    max error: {np.nanmax(err):.6g} at", fg=None)
+            self.error(f"{indent}              " + str(w).replace('\n', f'\n{indent}              '), fg=None)
+            self.error(f"{indent}        d1[0]: {d1[tuple(w[0])]}", fg=None)
+            self.error(f"{indent}        d2[0]: {d2[tuple(w[0])]}", fg=None)
+            self.error(f"{indent}    avg error: {np.nanmean(err):.6g}", fg=None)
+            self.error(f"{indent}    std error: {np.nanstd(err):.6g}", fg=None)
+            self.error(f"{indent}      0 error: {n_zero_err/n_all*100:.4f}% ({n_zero_err}/{n_all})", fg=None)
 
         else:
-            self.success(f"{indent}data: pass")
+            self.success(f"{indent}data: ", fg=None, nl=False)
+            self.success("pass")
 
         return match
 
@@ -218,14 +279,14 @@ class TestBaseGroup(TestBase):
 
         if self.stop_on_mismatch and not match_data:
             self._stop = True
-            self.error("data mismatch")
 
-        self.echo("--------")
-        self.echo("overall:")
+        verbose = self.verbose if self.tqdm_mode else self.LOG_MAX
+        self.info("--------", verbose=verbose)
+        self.info("overall2:", verbose=verbose)
         if match_data:
-            self.success('    data: pass')
+            self.success('    data: pass', verbose=verbose)
         else:
-            self.error('    data: fail')
+            self.error('    data: fail', verbose=verbose)
         return match_data
 
 
@@ -259,8 +320,8 @@ class TestBaseAttr(TestBaseGroup):
         match = True
         if sorted(a1.keys()) != sorted(a2.keys()):
             self.error(f"{indent}different attributes")
-            self.echo(f"{indent}    {sorted(a1.keys())}")
-            self.echo(f"{indent}    {sorted(a2.keys())}")
+            self.error(f"{indent}    {sorted(a1.keys())}", fg=None)
+            self.error(f"{indent}    {sorted(a2.keys())}", fg=None)
 
         for att in a1:
             if att not in a2:
@@ -271,15 +332,17 @@ class TestBaseAttr(TestBaseGroup):
 
             if a1[att] != a2[att]:
                 match = False
-                self.error(f"{indent}{att}: fail")
-                self.echo(f"{indent}    {a1[att]}")
-                self.echo(f"{indent}    {a2[att]}")
+                self.error(f"{indent}{att}: ", fg=None, nl=False)
+                self.error("fail")
+                self.error(f"{indent}    {repr(a1[att])}", fg=None)
+                self.error(f"{indent}    {repr(a2[att])}", fg=None)
             else:
-                self.success(f"{indent}{att}: pass")
+                self.success(f"{indent}{att}: ", fg=None, nl=False)
+                self.success("pass")
         return match
 
     def test(self, file1, file2):
-        super().test(file1, file2)
+        TestBase.test(self, file1, file2)
 
         match_data, match_attr = self.do_test(file1, file2)
         if not match_data:
@@ -293,18 +356,22 @@ class TestBaseAttr(TestBaseGroup):
 
         if self.stop_on_mismatch and not match_data:
             self._stop = True
-            self.error("data mismatch")
 
-        self.echo("--------")
-        self.echo("overall:")
+        verbose = self.verbose if self.tqdm_mode else self.LOG_MAX
+        self.info("--------", verbose=verbose)
+        self.info("overall:", verbose=verbose)
         if match_data:
-            self.success('    data: pass')
+            self.success('    data: ', fg=None, nl=False, verbose=verbose)
+            self.success('pass', verbose=verbose)
         else:
-            self.error('    data: fail')
+            self.error('    data: ', fg=None, nl=False, verbose=verbose)
+            self.error('fail', verbose=verbose)
         if match_attr:
-            self.success('    attribute: pass')
+            self.success('    attribute: ', fg=None, nl=False, verbose=verbose)
+            self.success('pass', verbose=verbose)
         else:
-            self.error('    attribute: fail')
+            self.error('    attribute: ', fg=None, nl=False, verbose=verbose)
+            self.error('fail', verbose=verbose)
         return match_data
 
 
@@ -314,9 +381,13 @@ class TestBaseAttr(TestBaseGroup):
         self.ignore_attributes = kwargs.get('ignore_attr', [])
         return kwargs
 
-    def test_all(self, folder1, folder2):
-        if super().test_all(folder1, folder2):
-            self.echo(f'    attribute mismatch: {self.mismatch_attr}', verbose=True)
+    def show_result(self):
+        super().show_result()
+        self.info('    attribute mismatch: ', nl=False, verbose=self.LOG_MAX)
+        if self.mismatch_attr > 0:
+            self.error(f'{self.mismatch_attr}', verbose=self.LOG_MAX)
+        else:
+            self.success(f'{self.mismatch_attr}', verbose=self.LOG_MAX)
 
     @classmethod
     def run(cls, **kwargs):
@@ -325,12 +396,13 @@ class TestBaseAttr(TestBaseGroup):
         if kwargs['file1'] is not None and kwargs['file2'] is not None:
             test.stop_on_mismatch = False
             test.stop_on_attr_mismatch = False
-            test.verbose = True
+            if test.verbose == test.LOG_AUTO:
+                test.verbose = test.LOG_INFO
             test.test(kwargs['file1'], kwargs['file2'])
             test.show_result()
-            return
-        if kwargs['folder1'] is not None and kwargs['folder2'] is not None:
-            test.verbose = False
+        elif kwargs['folder1'] is not None and kwargs['folder2'] is not None:
+            if test.verbose == test.LOG_AUTO:
+                test.verbose = cls.LOG_NONE
             test.test_all(kwargs['folder1'], kwargs['folder2'])
 
     @classmethod
