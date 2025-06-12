@@ -45,7 +45,7 @@ class TestMat(TestBaseGroup):
         for k, v in group1.items():
             self.start_message_delay()
 
-            self.error(k)
+            self.error(k, fg=None)
             if self.has_pattern(k, self.ignore_variables):
                 self.warning(f"{indent}    ignore")
                 continue

@@ -32,6 +32,7 @@ class TestBase:
         self.tqdm_mode = False
         self._msgs = []
         self.message_delay = 0
+        self.match = False
 
     def _verbose(self, kwargs):
         return kwargs.pop('verbose', 0) or self.verbose
@@ -115,6 +116,20 @@ class TestBase:
             self.error(f'{self.mismatch_count}', verbose=self.LOG_MAX)
         else:
             self.success(f'{self.mismatch_count}', verbose=self.LOG_MAX)
+
+    def show_pass_fail(self, name, match, verbose):
+        if match:
+            self.success(f'    {name}: ', fg=None, nl=False, verbose=verbose)
+            self.success('pass', verbose=verbose)
+        else:
+            self.error(f'    {name}: ', fg=None, nl=False, verbose=verbose)
+            self.error('fail', verbose=verbose)
+
+    def show_overall(self):
+        verbose = self.verbose if self.tqdm_mode else self.LOG_MAX
+        self.info("--------", verbose=verbose)
+        self.info("overall:", verbose=verbose)
+        self.show_pass_fail('data', self.match, verbose)
 
     def test_all(self, folder1, folder2):
         self._stop = False
@@ -280,15 +295,10 @@ class TestBaseGroup(TestBase):
         if self.stop_on_mismatch and not match_data:
             self._stop = True
 
-        verbose = self.verbose if self.tqdm_mode else self.LOG_MAX
-        self.info("--------", verbose=verbose)
-        self.info("overall2:", verbose=verbose)
-        if match_data:
-            self.success('    data: pass', verbose=verbose)
-        else:
-            self.error('    data: fail', verbose=verbose)
-        return match_data
+        self.match = match_data
+        self.show_overall()
 
+        return match_data
 
     def load_config(self, **kwargs):
         kwargs = super().load_config(**kwargs)
@@ -308,6 +318,7 @@ class TestBaseAttr(TestBaseGroup):
         self.mismatch_attr = 0
         self.stop_on_attr_mismatch = False
         self.ignore_attributes = []
+        self.match_attr = False
 
     def get_attrs(self, d):
         raise NotImplementedError
@@ -357,23 +368,16 @@ class TestBaseAttr(TestBaseGroup):
         if self.stop_on_mismatch and not match_data:
             self._stop = True
 
-        verbose = self.verbose if self.tqdm_mode else self.LOG_MAX
-        self.info("--------", verbose=verbose)
-        self.info("overall:", verbose=verbose)
-        if match_data:
-            self.success('    data: ', fg=None, nl=False, verbose=verbose)
-            self.success('pass', verbose=verbose)
-        else:
-            self.error('    data: ', fg=None, nl=False, verbose=verbose)
-            self.error('fail', verbose=verbose)
-        if match_attr:
-            self.success('    attribute: ', fg=None, nl=False, verbose=verbose)
-            self.success('pass', verbose=verbose)
-        else:
-            self.error('    attribute: ', fg=None, nl=False, verbose=verbose)
-            self.error('fail', verbose=verbose)
+        self.match = match_data
+        self.match_attr = match_attr
+        self.show_overall()
+
         return match_data
 
+    def show_overall(self):
+        super().show_overall()
+        verbose = self.verbose if self.tqdm_mode else self.LOG_MAX
+        self.show_pass_fail('attribute', self.match_attr, verbose)
 
     def load_config(self, **kwargs):
         kwargs = super().load_config(**kwargs)
