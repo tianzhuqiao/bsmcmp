@@ -1,16 +1,14 @@
-from charset_normalizer import detect
+import difflib
 
 from .base import TestBase
+from .utility import get_file_encoding
 
 class TestAscii(TestBase):
     NAME = "ascii"
     EXT = '.txt'
 
     def open_ascii(self, filename):
-        encoding = 'utf-8'
-        with open(filename.strip(), 'rb') as fp:
-            raw = fp.read()
-            encoding = detect(raw)['encoding']
+        encoding = get_file_encoding(filename)
 
         data = None
         with open(filename, 'r', encoding=encoding) as fp:
@@ -29,6 +27,9 @@ class TestAscii(TestBase):
 
         if not match:
             self.mismatch_count += 1
+            if self.verbose >= self.LOG_ERROR:
+                for line in difflib.ndiff(d1, d2):
+                    self.error(line, nl=False, fg=None)
         return match
 
 

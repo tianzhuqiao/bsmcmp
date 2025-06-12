@@ -2,9 +2,9 @@ from collections.abc import MutableMapping
 from csv import Sniffer
 import numpy as np
 import pandas as pd
-from charset_normalizer import detect
 
 from .base import TestBaseGroup
+from .utility import get_file_encoding
 
 
 class TestCSV(TestBaseGroup):
@@ -47,10 +47,7 @@ class TestCSV(TestBaseGroup):
 
     def do_test(self, file1, file2):
         def _load(filename):
-            encoding = 'utf-8'
-            with open(filename.strip(), 'rb') as fp:
-                raw = fp.read()
-                encoding = detect(raw)['encoding']
+            encoding = get_file_encoding(filename)
 
             sep = ','
             with open(filename, encoding=encoding) as fp:

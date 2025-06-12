@@ -129,7 +129,7 @@ class TestBase:
 
                 if self.shall_ignore(filename):
                     continue
-                self.error(f"\n#{self.file_count}", fg=None)
+                self.error(f"\n#{self.file_count+1}", fg=None)
                 self.error(file1, fg=None)
                 self.error(file2, fg=None)
                 if not os.path.isfile(file2):
