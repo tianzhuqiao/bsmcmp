@@ -26,11 +26,13 @@ class TestCSV(TestBaseGroup):
             self.error(k, fg=None)
             if self.has_pattern(k, self.ignore_variables):
                 self.warning(f"{indent}    ignore")
+                self.end_message_delay()
                 continue
 
             if k not in group2:
-                self.error(f'group "{k}" not found in 2nd file')
+                self.error(f'{indent}    not found in 2nd file')
                 match_data = False
+                self.end_message_delay()
                 continue
 
             d1 = group1[k]
@@ -42,6 +44,13 @@ class TestCSV(TestBaseGroup):
                     match_data = False
 
             self.end_message_delay()
+
+        for k in group2:
+            if k not in group1:
+                self.error(k, fg=None)
+                self.error(f'{indent}    not found in 1st file')
+                match_data = False
+
 
         return match_data
 

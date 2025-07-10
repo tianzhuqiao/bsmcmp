@@ -22,12 +22,17 @@ except:
     pass
 
 try:
+    from .grib2 import test_grib2
+    cli.add_command(test_grib2)
+except:
+    pass
+
+try:
     from .mat import test_mat
     cli.add_command(test_mat)
 except:
     pass
 
-from .csv import test_csv
 try:
     from .csv import test_csv
     cli.add_command(test_csv)

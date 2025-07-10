@@ -16,7 +16,7 @@ classifiers = [
 ]
 dependencies = [
           'numpy', 'scipy', 'click>=8.1', 'pandas', 'netCDF4', 'charset_normalizer',
-          'h5py', 'packaging', 'netCDF4', 'tqdm', 'pyyaml'
+          'h5py', 'packaging', 'netCDF4', 'tqdm', 'pyyaml', 'xarray', 'cfgrib'
       ]
 dynamic = ["version"]
 

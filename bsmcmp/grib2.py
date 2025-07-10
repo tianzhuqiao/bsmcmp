@@ -1,18 +1,20 @@
 import numpy as np
-import h5py
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+import xarray as xr
 
 from .base import TestBaseAttr
 
 
-class TestHDF5(TestBaseAttr):
-    NAME = 'HDF5'
-    EXT = '.h5'
+class TestGRIB2(TestBaseAttr):
+    NAME = 'grib'
+    EXT = '.grib2'
 
     def get_attrs(self, d):
         return d.attrs
 
     def get_data(self, d):
-        return np.asarray(d)
+        return d.to_numpy()
 
     def check_group(self, group1, group2, indent=""):
 
@@ -22,7 +24,7 @@ class TestHDF5(TestBaseAttr):
         # check data and its attributes
         match_data = True
         match_data = len(group1) == len(group2)
-        for k, v in group1.items():
+        for k in group1.variables:
             self.start_message_delay()
 
             self.error(k, fg=None)
@@ -39,18 +41,15 @@ class TestHDF5(TestBaseAttr):
 
             d1 = group1[k]
             d2 = group2[k]
-            if isinstance(v, h5py.Group):
-                match_data, match_attr = self.check_group(d1, d2, indent + '    ')
-            elif isinstance(v, h5py.Dataset):
-                if not self.check_data(d1, d2, indent+'    '):
-                    match_data = False
+            if not self.check_data(d1, d2, indent+'    '):
+                match_data = False
 
-                if not self.check_attr(d1, d2, indent+'    '):
-                    match_attr = False
+            if not self.check_attr(d1, d2, indent+'    '):
+                match_attr = False
 
             self.end_message_delay()
 
-        for k in group2:
+        for k in group2.variables:
             if k not in group1:
                 self.error(k, fg=None)
                 self.error(f'{indent}    not found in 1st file')
@@ -60,13 +59,13 @@ class TestHDF5(TestBaseAttr):
 
     def do_test(self, file1, file2):
 
-        f1 = h5py.File(file1)
-        f2 = h5py.File(file2)
+        f1 = xr.open_dataset(file1)
+        f2 = xr.open_dataset(file2)
         match_data, match_attr = self.check_group(f1, f2)
         f1.close()
         f2.close()
         return match_data, match_attr
 
-@TestHDF5.click_command()
-def test_h5(**kwargs):
-    TestHDF5.run(**kwargs)
+@TestGRIB2.click_command()
+def test_grib2(**kwargs):
+    TestGRIB2.run(**kwargs)

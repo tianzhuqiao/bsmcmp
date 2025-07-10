@@ -258,19 +258,22 @@ class TestBaseGroup(TestBase):
         if not match:
             self.error(f"{indent}data: ", fg=None, nl=False)
             self.error("fail")
-            err = np.abs(d1 - d2)
-            w = np.argwhere(err == np.max(err))
-            n_zero_err = np.sum((err.flatten() == 0))
-            n_all = len(err.flatten())
+            if d1.shape == d2.shape:
+                err = np.abs(d1 - d2)
+                w = np.argwhere(err == np.max(err))
+                n_zero_err = np.sum((err.flatten() == 0))
+                n_all = len(err.flatten())
 
-            self.error(f"{indent}    max error: {np.nanmax(err):.6g} at", fg=None)
-            self.error(f"{indent}              " + str(w).replace('\n', f'\n{indent}              '), fg=None)
-            self.error(f"{indent}        d1[0]: {d1[tuple(w[0])]}", fg=None)
-            self.error(f"{indent}        d2[0]: {d2[tuple(w[0])]}", fg=None)
-            self.error(f"{indent}    avg error: {np.nanmean(err):.6g}", fg=None)
-            self.error(f"{indent}    std error: {np.nanstd(err):.6g}", fg=None)
-            self.error(f"{indent}      0 error: {n_zero_err/n_all*100:.4f}% ({n_zero_err}/{n_all})", fg=None)
-
+                self.error(f"{indent}    max error: {np.nanmax(err):.6g} at", fg=None)
+                self.error(f"{indent}              " + str(w).replace('\n', f'\n{indent}              '), fg=None)
+                self.error(f"{indent}        d1[0]: {d1[tuple(w[0])]}", fg=None)
+                self.error(f"{indent}        d2[0]: {d2[tuple(w[0])]}", fg=None)
+                self.error(f"{indent}    avg error: {np.nanmean(err):.6g}", fg=None)
+                self.error(f"{indent}    std error: {np.nanstd(err):.6g}", fg=None)
+                self.error(f"{indent}      0 error: {n_zero_err/n_all*100:.4f}% ({n_zero_err}/{n_all})", fg=None)
+            else:
+                self.error(f"{indent}    d1.shape: {d1.shape}", fg=None)
+                self.error(f"{indent}    d2.shape: {d2.shape}", fg=None)
         else:
             self.success(f"{indent}data: ", fg=None, nl=False)
             self.success("pass")
