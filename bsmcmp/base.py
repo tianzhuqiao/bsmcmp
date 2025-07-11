@@ -3,6 +3,7 @@ import traceback
 import glob
 import re
 import functools
+from pathlib import Path
 import numpy as np
 import click
 from click.core import ParameterSource
@@ -141,12 +142,11 @@ class TestBase:
 
                 file1 = filename
                 file2 = filename.replace(folder1, folder2)
-
+                file_rel = str(Path(file1).relative_to(folder1).as_posix())
                 if self.shall_ignore(filename):
                     continue
                 self.error(f"\n#{self.file_count+1}", fg=None)
-                self.error(file1, fg=None)
-                self.error(file2, fg=None)
+                self.error(file_rel, fg=None)
                 if not os.path.isfile(file2):
                     self.warning(f"can't find file: {file2}")
                     continue
@@ -154,12 +154,10 @@ class TestBase:
                     match = self.test(file1, file2)
                     if not match and self.verbose == self.LOG_NONE:
                         self.info(f"\n#{self.mismatch_count} mismatch", verbose=self.LOG_MAX)
-                        self.info(file1, verbose=self.LOG_MAX)
-                        self.info(file2, verbose=self.LOG_MAX)
+                        self.info(file_rel, verbose=self.LOG_MAX)
                 except:
                     if self.verbose == self.LOG_NONE:
-                        self.info(file1, verbose=self.LOG_MAX)
-                        self.info(file2, verbose=self.LOG_MAX)
+                        self.info(file_rel, verbose=self.LOG_MAX)
                     traceback.print_exc()
                     break
 
