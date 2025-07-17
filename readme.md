@@ -12,6 +12,7 @@ $ pip install bsmcmp
 - [HDF5](https://docs.h5py.org/en/stable/)
 - Matlab (.mat)
 - [netCDF](https://unidata.github.io/netcdf4-python/)
+- [GRIB](https://docs.xarray.dev/en/stable/examples/ERA5-GRIB-example.html)
 
 ## Usage
 For example, to compare two files:
@@ -35,6 +36,7 @@ Options:
 Commands:
   ascii
   csv
+  grib
   hdf5
   matlab
   netcdf
