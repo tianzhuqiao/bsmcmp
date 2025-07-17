@@ -2,7 +2,7 @@ PROJECT_NAME     = 'bsmcmp'
 
 VER_MAJOR        = 0
 VER_MINOR        = 0
-VER_RELEASE      = 4
+VER_RELEASE      = 5
 
 VER_FLAGS        = ""
 
