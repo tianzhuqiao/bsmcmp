@@ -103,6 +103,49 @@ class TestMat(TestBaseGroup):
         _close(f2)
         return match_data
 
+    def stat_group(self, group1, indent=""):
+
+        for k, v in group1.items():
+            self.start_message_delay()
+
+            self.error(k, fg='green')
+            if self.has_pattern(k, self.ignore_variables):
+                self.warning(f"{indent}    ignore")
+                self.end_message_delay()
+                continue
+
+            d1 = group1[k]
+            if isinstance(v, MutableMapping):
+                self.stat_group(d1, indent + '    ')
+            else:
+                self.stat_data(d1, indent+'    ')
+
+            self.end_message_delay()
+
+    def do_stat(self, file):
+        def _load(filename):
+            raw = None
+            try:
+                try:
+                    raw = io.loadmat(filename)
+                except:
+                    raw = h5py.File(filename,'r')
+            except:
+                pass
+            if raw is None:
+                self.error(f"failed to open {filename}")
+            return raw
+
+        def _close(fp):
+            if isinstance(fp, h5py.File):
+                fp.close()
+
+        f1 = _load(file)
+        if f1 is not None:
+            self.stat_group(self.process_record(f1))
+        _close(f1)
+
+
 @TestMat.click_command()
 def test_mat(**kwargs):
     TestMat.run(**kwargs)

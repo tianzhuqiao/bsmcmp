@@ -15,7 +15,7 @@ class TestNetcdf(TestBaseAttr):
         return attrs
 
     def get_data(self, d):
-        return np.asarray(d[:])
+        return np.asarray(d[:].astype(np.float64).filled(np.nan))
 
     def check_group(self, group1, group2, indent=""):
 
@@ -76,6 +76,35 @@ class TestNetcdf(TestBaseAttr):
         nc_p.close()
         nc_m.close()
         return match_data, match_attr
+
+    def do_stat(self, file):
+        nc_p = Dataset(file)
+        self.stat_group(nc_p)
+
+    def stat_group(self, group1, indent=""):
+
+        # check attribute
+        self.stat_attr(group1)
+
+        # check data and its attributes
+        for k in group1.variables:
+            self.start_message_delay()
+
+            self.error(k, fg='green')
+            if self.has_pattern(k, self.ignore_variables):
+                self.warning(f"{indent}    ignore")
+                self.end_message_delay()
+                continue
+
+            d1 = group1.variables[k]
+            self.stat_attr(d1, indent+'    ')
+            self.stat_data(d1, indent+'    ')
+
+            self.end_message_delay()
+
+        for k, g in group1.groups.items():
+            self.stat_group(g, indent+'    ')
+
 
 
 @TestNetcdf.click_command()

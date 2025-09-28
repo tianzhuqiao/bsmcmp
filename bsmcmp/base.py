@@ -97,6 +97,9 @@ class TestBase:
         self.file_count += 1
         return False
 
+    def stat(self, file1):
+        self.file_count += 1
+
     def shall_stop(self):
         return self._stop
 
@@ -194,6 +197,10 @@ class TestBase:
     def run(cls, **kwargs):
         test = cls()
         kwargs = test.load_config(**kwargs)
+        if kwargs['file1'] is None or kwargs['file2'] is None:
+            file = kwargs['file1'] or kwargs['file2']
+            if file is not None:
+                test.stat(file)
         if kwargs['file1'] is not None and kwargs['file2'] is not None:
             test.stop_on_mismatch = False
             if test.verbose == test.LOG_AUTO:
@@ -211,8 +218,8 @@ class TestBase:
         return [
                 click.option('-v', '--verbose', default=cls.LOG_AUTO, count=True),
                 click.option('--ext', default=cls.EXT, help=f'the {cls.NAME} file extention'),
-                click.option('--file1', type=click.Path(exists=True, dir_okay=False), help=f'1nd {cls.NAME} file.'),
-                click.option('--file2', type=click.Path(exists=True, dir_okay=False), help=f'2nd {cls.NAME} file.'),
+                click.option('--file1', type=click.Path(exists=True, dir_okay=False), help=f'1st {cls.NAME} file. If "file2" is missing, show the statistics info of "file1".'),
+                click.option('--file2', type=click.Path(exists=True, dir_okay=False), help=f'2nd {cls.NAME} file. If "file1" is missing, show the statistics info of "file2".'),
                 click.option('--folder1', type=click.Path(exists=True, file_okay=False), help=f'1st top folder contains {cls.NAME} files.'),
                 click.option('--folder2', type=click.Path(exists=True, file_okay=False), help=f'2nd top folder contains {cls.NAME} files. folder1 and folder2 shall have the same structure'),
                 click.option('--stop_on_mismatch/--no-stop_on_mismatch', is_flag=True, default=True, help='Stop when see any data mismatch'),
@@ -239,6 +246,19 @@ class TestBaseGroup(TestBase):
     def get_data(self, d):
         raise NotImplementedError
 
+    def stat_data(self, d, indent=''):
+        d = self.get_data(d)
+        self.error(f"{indent}data: ", fg='green')
+        d_f = d.flatten()
+        n_nan = np.sum(np.isnan(d_f))
+
+        self.error(f"{indent}    max: {np.nanmax(d_f):.6g}", fg=None)
+        self.error(f"{indent}    min: {np.nanmin(d_f):.6g}", fg=None)
+        self.error(f"{indent}    avg: {np.nanmean(d_f):.6g}", fg=None)
+        self.error(f"{indent}    std: {np.nanstd(d_f):.6g}", fg=None)
+        self.error(f"{indent}    % nan: {n_nan*100/len(d_f):.6g}% ({n_nan}/{len(d_f)})", fg=None)
+
+
     def check_data(self, d1, d2, indent=''):
         d1 = self.get_data(d1)
         d2 = self.get_data(d2)
@@ -249,7 +269,7 @@ class TestBaseGroup(TestBase):
                 match = True
             else:
                 # equal_nan is not supported for non-numeric data type
-                match = np.array_equal(d1, d2, equal_nan= np.issubdtype(d1.dtype, np.number))
+                match = np.array_equal(d1, d2, equal_nan=np.issubdtype(d1.dtype, np.number))
         else:
             match = False
 
@@ -300,6 +320,13 @@ class TestBaseGroup(TestBase):
         self.show_overall()
 
         return match_data
+
+    def do_stat(self, file):
+        raise NotImplementedError
+
+    def stat(self, file):
+        super().stat(file)
+        self.do_stat(file)
 
     def load_config(self, **kwargs):
         kwargs = super().load_config(**kwargs)
@@ -353,6 +380,18 @@ class TestBaseAttr(TestBaseGroup):
                 self.success("pass")
         return match
 
+    def stat_attr(self, d1, indent=''):
+        # a1, a2 are attribute dict
+        a1 = self.get_attrs(d1)
+
+        for att in a1:
+            if self.has_pattern(att, self.ignore_attributes):
+                self.warning(f"{indent}{att}: ignore")
+                continue
+
+            self.error(f"{indent}{att}: ", fg='green', nl=False)
+            self.error(f"{repr(a1[att])}", fg=None)
+
     def test(self, file1, file2):
         TestBase.test(self, file1, file2)
 
@@ -398,6 +437,10 @@ class TestBaseAttr(TestBaseGroup):
     def run(cls, **kwargs):
         test = cls()
         kwargs = test.load_config(**kwargs)
+        if kwargs['file1'] is None or kwargs['file2'] is None:
+            file = kwargs['file1'] or kwargs['file2']
+            if file is not None:
+                test.stat(file)
         if kwargs['file1'] is not None and kwargs['file2'] is not None:
             test.stop_on_mismatch = False
             test.stop_on_attr_mismatch = False

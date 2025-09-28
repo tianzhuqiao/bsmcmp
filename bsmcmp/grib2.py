@@ -66,6 +66,35 @@ class TestGRIB2(TestBaseAttr):
         f2.close()
         return match_data, match_attr
 
+    def stat_group(self, group1, indent=""):
+
+        # check attribute
+        self.stat_attr(group1)
+
+        # check data and its attributes
+        for k in group1.variables:
+            self.start_message_delay()
+
+            self.error(k, fg='green')
+            if self.has_pattern(k, self.ignore_variables):
+                self.warning(f"{indent}    ignore")
+                self.end_message_delay()
+                continue
+
+            d1 = group1[k]
+            self.stat_data(d1, indent+'    ')
+
+            self.stat_attr(d1, indent+'    ')
+
+            self.end_message_delay()
+
+    def do_stat(self, file):
+
+        f1 = xr.open_dataset(file)
+        self.stat_group(f1)
+        f1.close()
+
+
 @TestGRIB2.click_command()
 def test_grib2(**kwargs):
     TestGRIB2.run(**kwargs)

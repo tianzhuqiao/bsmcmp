@@ -75,6 +75,45 @@ class TestCSV(TestBaseGroup):
             match_data = False
         return match_data
 
+    def stat_group(self, group1, indent=""):
+
+        # check data
+        for k, v in group1.items():
+            self.start_message_delay()
+
+            self.error(k, fg=None)
+            if self.has_pattern(k, self.ignore_variables):
+                self.warning(f"{indent}    ignore")
+                self.end_message_delay()
+                continue
+
+            d1 = group1[k]
+            if isinstance(v, MutableMapping):
+                self.stat_group(d1, indent + '    ')
+            else:
+                self.stat_data(d1, indent+'    ')
+
+            self.end_message_delay()
+
+
+    def do_stat(self, file):
+        def _load(filename):
+            encoding = get_file_encoding(filename)
+
+            sep = ','
+            with open(filename, encoding=encoding) as fp:
+                line = fp.readline()
+                s = Sniffer()
+                d = s.sniff(line)
+                sep = d.delimiter
+            csv = pd.read_csv(filename, sep=sep)
+            return csv
+
+        f1 = _load(file)
+        if f1 is not None:
+            self.stat_group(f1)
+
+
 @TestCSV.click_command()
 def test_csv(**kwargs):
     TestCSV.run(**kwargs)
