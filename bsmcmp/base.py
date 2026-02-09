@@ -369,7 +369,7 @@ class TestBaseAttr(TestBaseGroup):
                 self.warning(f"{indent}{att}: ignore")
                 continue
 
-            if a1[att] != a2[att]:
+            if np.any(a1[att] != a2[att]):
                 match = False
                 self.error(f"{indent}{att}: ", fg=None, nl=False)
                 self.error("fail")
