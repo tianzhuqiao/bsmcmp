@@ -97,7 +97,7 @@ class TestBase:
         self.file_count += 1
         return False
 
-    def stat(self, file1):
+    def stat(self, file):
         self.file_count += 1
 
     def shall_stop(self):
@@ -106,7 +106,7 @@ class TestBase:
 
     def has_pattern(self, value, patterns):
         for item in patterns:
-            if re.search(item, value) is not None:
+            if re.search(item, str(value)) is not None:
                 return True
         return False
 
@@ -284,8 +284,8 @@ class TestBaseGroup(TestBase):
 
                 self.error(f"{indent}    max error: {np.nanmax(err):.6g} at", fg=None)
                 self.error(f"{indent}              " + str(w).replace('\n', f'\n{indent}              '), fg=None)
-                self.error(f"{indent}        d1[0]: {d1[tuple(w[0])]}", fg=None)
-                self.error(f"{indent}        d2[0]: {d2[tuple(w[0])]}", fg=None)
+                self.error(f"{indent}           d1: {d1[tuple(w[0])]}", fg=None)
+                self.error(f"{indent}           d2: {d2[tuple(w[0])]}", fg=None)
                 self.error(f"{indent}    avg error: {np.nanmean(err):.6g}", fg=None)
                 self.error(f"{indent}    std error: {np.nanstd(err):.6g}", fg=None)
                 self.error(f"{indent}      0 error: {n_zero_err/n_all*100:.4f}% ({n_zero_err}/{n_all})", fg=None)

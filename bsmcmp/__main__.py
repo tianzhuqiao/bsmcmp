@@ -39,5 +39,12 @@ try:
 except:
     pass
 
+try:
+    from .geotiff import test_geotiff
+    cli.add_command(test_geotiff)
+except:
+    pass
+
+
 if __name__ == '__main__':
     cli()
