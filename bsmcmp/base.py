@@ -139,7 +139,7 @@ class TestBase:
         self._stop = False
         if folder1 is not None and folder2 is not None:
             self.tqdm_mode = True
-            for filename in tqdm.tqdm(glob.iglob(f'{folder1}/**/*{self.ext}', recursive=self.recursive)):
+            for filename in tqdm.tqdm(glob.iglob(f'{folder1}/**/*{self.ext}', recursive=self.recursive), unit='file'):
                 if self.shall_stop():
                     break
 

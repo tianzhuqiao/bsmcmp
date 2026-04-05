@@ -13,6 +13,7 @@ $ pip install bsmcmp
 - Matlab (.mat)
 - [netCDF](https://unidata.github.io/netcdf4-python/)
 - [GRIB](https://docs.xarray.dev/en/stable/examples/ERA5-GRIB-example.html)
+- [GeoTIFF](https://rasterio.readthedocs.io/en/stable/)
 
 ## Usage
 For example, to compare two files:

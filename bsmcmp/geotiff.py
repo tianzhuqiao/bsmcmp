@@ -24,7 +24,7 @@ class TestGeoTiff(TestBaseAttr):
             for k in range(1, group1.count+1):
                 self.start_message_delay()
 
-                self.error(k, fg=None)
+                self.error(f'band {k}', fg=None)
                 if self.has_pattern(k, self.ignore_variables):
                     self.warning(f"{indent}    ignore")
                     self.end_message_delay()
