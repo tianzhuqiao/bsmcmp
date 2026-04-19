@@ -1,12 +1,19 @@
 import click
+from auto_click_auto import enable_click_shell_completion
 
-from .version import __version__
+from .version import __version__, PROJECT_NAME
 from .ascii import test_ascii
 
 @click.group()
 @click.version_option(__version__)
 def cli():
     pass
+
+@cli.command()
+@click.option('--shell_completion', is_flag=True, help='Enable command autocompletion')
+def config(shell_completion):
+    if shell_completion:
+        enable_click_shell_completion(program_name=PROJECT_NAME, verbose=True)
 
 cli.add_command(test_ascii)
 try:
