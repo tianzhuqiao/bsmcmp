@@ -246,10 +246,17 @@ class TestBaseGroup(TestBase):
     def get_data(self, d):
         raise NotImplementedError
 
-    def stat_data(self, d, indent=''):
+    def stat_data(self, d, indent='', name='data'):
         d = self.get_data(d)
-        self.error(f"{indent}data: ", fg='green')
+        self.error(f"{indent}{name}: ", fg='green')
+        if not np.issubdtype(d.dtype, np.number):
+            self.error(f"{indent}    not numeric", fg=None)
+            return
         d_f = d.flatten()
+        if len(d_f) == 0:
+            self.error(f"{indent}    empty", fg=None)
+            return
+
         n_nan = np.sum(np.isnan(d_f))
 
         self.error(f"{indent}    max: {np.nanmax(d_f):.6g}", fg=None)
@@ -259,7 +266,7 @@ class TestBaseGroup(TestBase):
         self.error(f"{indent}    % nan: {n_nan*100/len(d_f):.6g}% ({n_nan}/{len(d_f)})", fg=None)
 
 
-    def check_data(self, d1, d2, indent=''):
+    def check_data(self, d1, d2, indent='', name="data"):
         d1 = self.get_data(d1)
         d2 = self.get_data(d2)
         match = True
@@ -274,7 +281,7 @@ class TestBaseGroup(TestBase):
             match = False
 
         if not match:
-            self.error(f"{indent}data: ", fg=None, nl=False)
+            self.error(f"{indent}{name}: ", fg=None, nl=False)
             self.error("fail")
             if d1.shape == d2.shape:
                 err = np.abs(d1 - d2)
@@ -381,7 +388,7 @@ class TestBaseAttr(TestBaseGroup):
         return match
 
     def stat_attr(self, d1, indent=''):
-        # a1, a2 are attribute dict
+        # a1 is attribute dict
         a1 = self.get_attrs(d1)
 
         for att in a1:

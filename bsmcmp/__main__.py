@@ -59,6 +59,11 @@ try:
 except:
     pass
 
+try:
+    from .fits import test_fits
+    cli.add_command(test_fits)
+except:
+    pass
 
 if __name__ == '__main__':
     cli()
