@@ -14,16 +14,17 @@ $ pip install bsmcmp
 - [netCDF](https://unidata.github.io/netcdf4-python/)
 - [GRIB](https://docs.xarray.dev/en/stable/examples/ERA5-GRIB-example.html)
 - [GeoTIFF](https://rasterio.readthedocs.io/en/stable/)
+- [FITS](https://docs.astropy.org/en/latest/io/fits/index.html)
 
 ## Usage
 For example, to compare two files:
 ```
-$ bsmcmp netcdf --file1 file1.nc --file2 file2.nc
+$ bsmcmp netcdf --file1 /path/to/file1.nc --file2 /path/to/file2.nc
 ```
 
 To compare all files in two folders (assume both folders have the same structure):
 ```
-$ bsmcmp netcdf --folder1 file1.nc --folder file2.nc
+$ bsmcmp netcdf --folder1 /path/to/folder1 --folder2 /path/to/folder2
 ```
 
 See `bsmcmp --help` or `bsmcmp COMMAND --help` for details
@@ -36,9 +37,12 @@ Options:
 
 Commands:
   ascii
+  config
   csv
+  fits
+  geotiff
   grib
   hdf5
   matlab
   netcdf
-  ```
+```
