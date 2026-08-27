@@ -65,5 +65,11 @@ try:
 except:
     pass
 
+try:
+    from .jp2k import test_jp2k
+    cli.add_command(test_jp2k)
+except:
+    pass
+
 if __name__ == '__main__':
     cli()
