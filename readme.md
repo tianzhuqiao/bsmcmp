@@ -15,14 +15,14 @@ $ pip install bsmcmp
 - [GRIB](https://docs.xarray.dev/en/stable/examples/ERA5-GRIB-example.html)
 - [GeoTIFF](https://rasterio.readthedocs.io/en/stable/)
 - [FITS](https://docs.astropy.org/en/latest/io/fits/index.html)
-
+- [JP2K](https://glymur.readthedocs.io/en/latest/introduction.html)
 ## Usage
-For example, to compare two files:
+For example, to compare two netCDF files:
 ```
 $ bsmcmp netcdf --file1 /path/to/file1.nc --file2 /path/to/file2.nc
 ```
 
-To compare all files in two folders (assume both folders have the same structure):
+To compare all netCDF files in two folders (assume both folders have the same structure):
 ```
 $ bsmcmp netcdf --folder1 /path/to/folder1 --folder2 /path/to/folder2
 ```
@@ -43,6 +43,7 @@ Commands:
   geotiff
   grib
   hdf5
+  jp2k
   matlab
   netcdf
 ```
