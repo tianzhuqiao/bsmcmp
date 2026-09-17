@@ -15,7 +15,10 @@ class TestNetcdf(TestBaseAttr):
         return attrs
 
     def get_data(self, d):
-        return np.asarray(d[:].astype(np.float64).filled(np.nan))
+        try:
+            return np.asarray(d[:].astype(np.float64).filled(np.nan))
+        except:
+            return d[:]
 
     def check_group(self, group1, group2, indent=""):
 
