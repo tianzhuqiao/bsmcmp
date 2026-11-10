@@ -1,7 +1,5 @@
 from collections.abc import MutableMapping
 import numpy as np
-from scipy import io
-import h5py
 
 from .base import TestBaseGroup
 
@@ -76,6 +74,8 @@ class TestMat(TestBaseGroup):
         return match_data
 
     def do_test(self, file1, file2):
+        from scipy import io
+        import h5py
         def _load(filename):
             raw = None
             try:
@@ -123,6 +123,8 @@ class TestMat(TestBaseGroup):
             self.end_message_delay()
 
     def do_stat(self, file):
+        from scipy import io
+        import h5py
         def _load(filename):
             raw = None
             try:

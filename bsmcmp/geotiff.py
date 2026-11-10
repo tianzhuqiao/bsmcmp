@@ -1,5 +1,4 @@
 import numpy as np
-import rasterio
 
 from .base import TestBaseAttr
 
@@ -39,6 +38,7 @@ class TestGeoTiff(TestBaseAttr):
         return match_data, match_attr
 
     def do_test(self, file1, file2):
+        import rasterio
         nc_p = rasterio.open(file1)
         nc_m = rasterio.open(file2)
         match_data, match_attr = self.check_group(nc_p, nc_m)
@@ -47,6 +47,7 @@ class TestGeoTiff(TestBaseAttr):
         return match_data, match_attr
 
     def do_stat(self, file):
+        import rasterio
         nc_p = rasterio.open(file)
         self.stat_group(nc_p)
 

@@ -1,5 +1,4 @@
 import numpy as np
-import h5py
 
 from .base import TestBaseAttr
 
@@ -15,6 +14,7 @@ class TestHDF5(TestBaseAttr):
         return np.asarray(d)
 
     def check_group(self, group1, group2, indent=""):
+        import h5py
 
         # check attribute
         match_attr = self.check_attr(group1, group2)
@@ -59,6 +59,7 @@ class TestHDF5(TestBaseAttr):
         return match_data, match_attr
 
     def do_test(self, file1, file2):
+        import h5py
 
         f1 = h5py.File(file1)
         f2 = h5py.File(file2)
@@ -68,6 +69,7 @@ class TestHDF5(TestBaseAttr):
         return match_data, match_attr
 
     def stat_group(self, group1, indent=""):
+        import h5py
 
         # check attribute
         self.stat_attr(group1)
@@ -93,6 +95,7 @@ class TestHDF5(TestBaseAttr):
             self.end_message_delay()
 
     def do_stat(self, file):
+        import h5py
 
         f1 = h5py.File(file)
         self.stat_group(f1)

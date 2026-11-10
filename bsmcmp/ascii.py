@@ -1,5 +1,3 @@
-import difflib
-
 from .base import TestBase
 from .utility import get_file_encoding
 
@@ -18,6 +16,8 @@ class TestAscii(TestBase):
         return data
 
     def test(self, file1, file2):
+        import difflib
+
         super().test(file1, file2)
 
         d1 = self.open_ascii(file1)

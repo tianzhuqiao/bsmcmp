@@ -1,5 +1,4 @@
 import numpy as np
-import glymur
 
 from .base import TestBaseAttr
 
@@ -32,12 +31,14 @@ class TestJP2K(TestBaseAttr):
         return match_data, match_attr
 
     def do_test(self, file1, file2):
+        import glymur
         nc_p = glymur.Jp2k(file1)
         nc_m = glymur.Jp2k(file2)
         match_data, match_attr = self.check_group(nc_p, nc_m)
         return match_data, match_attr
 
     def do_stat(self, file):
+        import glymur
         nc_p = glymur.Jp2k(file)
         self.stat_group(nc_p)
 

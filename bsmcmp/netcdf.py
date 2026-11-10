@@ -1,7 +1,4 @@
 import numpy as np
-import netCDF4
-from netCDF4 import Dataset
-
 from .base import TestBaseAttr
 
 class TestNetcdf(TestBaseAttr):
@@ -73,6 +70,7 @@ class TestNetcdf(TestBaseAttr):
         return match_data, match_attr
 
     def do_test(self, file1, file2):
+        from netCDF4 import Dataset
         nc_p = Dataset(file1)
         nc_m = Dataset(file2)
         match_data, match_attr = self.check_group(nc_p, nc_m)
@@ -81,6 +79,7 @@ class TestNetcdf(TestBaseAttr):
         return match_data, match_attr
 
     def do_stat(self, file):
+        from netCDF4 import Dataset
         nc_p = Dataset(file)
         self.stat_group(nc_p)
 

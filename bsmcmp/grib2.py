@@ -1,7 +1,6 @@
 import numpy as np
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
-import xarray as xr
 
 from .base import TestBaseAttr
 
@@ -58,6 +57,7 @@ class TestGRIB2(TestBaseAttr):
         return match_data, match_attr
 
     def do_test(self, file1, file2):
+        import xarray as xr
 
         f1 = xr.open_dataset(file1)
         f2 = xr.open_dataset(file2)
@@ -89,6 +89,7 @@ class TestGRIB2(TestBaseAttr):
             self.end_message_delay()
 
     def do_stat(self, file):
+        import xarray as xr
 
         f1 = xr.open_dataset(file)
         self.stat_group(f1)

@@ -1,5 +1,4 @@
 import numpy as np
-from astropy.io import fits
 
 from .base import TestBaseAttr
 
@@ -54,6 +53,7 @@ class TestFits(TestBaseAttr):
         return all(match_data), all(match_attr)
 
     def do_test(self, file1, file2):
+        from astropy.io import fits
         nc_p = fits.open(file1)
         nc_m = fits.open(file2)
         match_data, match_attr = self.check_group(nc_p, nc_m)
@@ -62,6 +62,7 @@ class TestFits(TestBaseAttr):
         return match_data, match_attr
 
     def do_stat(self, file):
+        from astropy.io import fits
         nc_p = fits.open(file)
         self.stat_group(nc_p)
 

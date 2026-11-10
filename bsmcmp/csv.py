@@ -1,7 +1,5 @@
 from collections.abc import MutableMapping
-from csv import Sniffer
 import numpy as np
-import pandas as pd
 
 from .base import TestBaseGroup
 from .utility import get_file_encoding
@@ -55,6 +53,9 @@ class TestCSV(TestBaseGroup):
         return match_data
 
     def do_test(self, file1, file2):
+        from csv import Sniffer
+        import pandas as pd
+
         def _load(filename):
             encoding = get_file_encoding(filename)
 
@@ -97,6 +98,9 @@ class TestCSV(TestBaseGroup):
 
 
     def do_stat(self, file):
+        from csv import Sniffer
+        import pandas as pd
+
         def _load(filename):
             encoding = get_file_encoding(filename)
 
