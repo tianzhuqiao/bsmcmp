@@ -7,7 +7,7 @@ name = "bsmcmp"
 authors = [
   { name="Tianzhu Qiao", email="tq@feiyilin.com" },
 ]
-license = {file = "LICENSE"}
+license-files = ["LICENSE"]
 description='bsmcmp is a tool to compare files'
 readme = "README.md"
 requires-python = ">=3.0"
