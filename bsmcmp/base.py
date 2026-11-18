@@ -5,7 +5,7 @@ import re
 import functools
 from pathlib import Path
 import numpy as np
-import numpy.ma as ma
+from numpy import ma
 import click
 from click.core import ParameterSource
 import yaml
@@ -289,7 +289,9 @@ class TestBaseGroup(TestBase):
             if d1.shape == d2.shape:
                 if np.issubdtype(d1.dtype, np.number) and np.issubdtype(d2.dtype, np.number):
                     err = np.abs(d1 - d2)
-                    w = np.argwhere(err == np.max(err))
+                    w = np.argwhere(err == np.nanmax(err))
+                    if w.size == 0:
+                        w = np.argwhere(np.isnan(err))
                     n_zero_err = np.sum((err.flatten() == 0))
                     n_all = len(err.flatten())
 
