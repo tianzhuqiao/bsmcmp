@@ -37,7 +37,7 @@ class TestBase:
         self.match = False
 
     def _verbose(self, kwargs):
-        return kwargs.pop('verbose', 0) or self.verbose
+        return kwargs.pop('verbose', self.verbose)
 
     def start_message_delay(self):
         self.message_delay += 1
@@ -303,7 +303,7 @@ class TestBaseGroup(TestBase):
                     self.error(f"{indent}    std error: {np.nanstd(err):.6g}", fg=None)
                     self.error(f"{indent}      0 error: {n_zero_err/n_all*100:.4f}% ({n_zero_err}/{n_all})", fg=None)
                 else:
-                    np.error(f"{indent}    not numeric", fg=None)
+                    self.error(f"{indent}    not numeric", fg=None)
             else:
                 self.error(f"{indent}    d1.shape: {d1.shape}", fg=None)
                 self.error(f"{indent}    d2.shape: {d2.shape}", fg=None)
@@ -378,10 +378,16 @@ class TestBaseAttr(TestBaseGroup):
             self.error(f"{indent}    {sorted(a2.keys())}", fg=None)
 
         for att in a1:
-            if att not in a2:
-                continue
             if self.has_pattern(att, self.ignore_attributes):
                 self.warning(f"{indent}{att}: ignore")
+                continue
+
+            if att not in a2:
+                match = False
+                self.error(f"{indent}{att}: ", fg=None, nl=False)
+                self.error("fail")
+                self.error(f"{indent}    {repr(a1[att])}", fg=None)
+                self.error(f"{indent}    not exist in 2nd file", fg=None)
                 continue
 
             if np.any(a1[att] != a2[att]):
@@ -393,6 +399,20 @@ class TestBaseAttr(TestBaseGroup):
             else:
                 self.success(f"{indent}{att}: ", fg=None, nl=False)
                 self.success("pass")
+
+        for att in a2:
+            if self.has_pattern(att, self.ignore_attributes):
+                self.warning(f"{indent}{att}: ignore")
+                continue
+
+            if att not in a1:
+                match = False
+                self.error(f"{indent}{att}: ", fg=None, nl=False)
+                self.error("fail")
+                self.error(f"{indent}    not exist in 1st file", fg=None)
+                self.error(f"{indent}    {repr(a2[att])}", fg=None)
+                continue
+
         return match
 
     def stat_attr(self, d1, indent=''):

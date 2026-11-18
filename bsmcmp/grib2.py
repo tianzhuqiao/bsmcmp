@@ -61,9 +61,11 @@ class TestGRIB2(TestBaseAttr):
 
         f1 = xr.open_dataset(file1)
         f2 = xr.open_dataset(file2)
-        match_data, match_attr = self.check_group(f1, f2)
-        f1.close()
-        f2.close()
+        try:
+            match_data, match_attr = self.check_group(f1, f2)
+        finally:
+            f1.close()
+            f2.close()
         return match_data, match_attr
 
     def stat_group(self, group1, indent=""):
@@ -92,8 +94,10 @@ class TestGRIB2(TestBaseAttr):
         import xarray as xr
 
         f1 = xr.open_dataset(file)
-        self.stat_group(f1)
-        f1.close()
+        try:
+            self.stat_group(f1)
+        finally:
+            f1.close()
 
 
 @TestGRIB2.click_command()

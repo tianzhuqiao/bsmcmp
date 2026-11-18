@@ -58,7 +58,8 @@ class TestMat(TestBaseGroup):
             d1 = group1[k]
             d2 = group2[k]
             if isinstance(v, MutableMapping):
-                match_data = self.check_group(d1, d2, indent + '    ')
+                group_match_data = self.check_group(d1, d2, indent + '    ')
+                match_data = match_data and group_match_data
             else:
                 if not self.check_data(d1, d2, indent+'    '):
                     match_data = False
@@ -95,7 +96,7 @@ class TestMat(TestBaseGroup):
 
         f1 = _load(file1)
         f2 = _load(file2)
-        if f1 is not None or f2 is not None:
+        if f1 is not None and f2 is not None:
             match_data = self.check_group(self.process_record(f1), self.process_record(f2))
         else:
             match_data = False

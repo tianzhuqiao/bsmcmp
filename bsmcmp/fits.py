@@ -24,7 +24,7 @@ class TestFits(TestBaseAttr):
         match_attr = []
         match_data = []
         for i in range(len(group1)):
-            self.info(f"index {i} (group1[i].name)")
+            self.info(f"index {i} ({group1[i].name})")
             # check attribute
             match_attr.append(self.check_attr(group1[i], group2[i], indent+'    '))
 
@@ -35,19 +35,23 @@ class TestFits(TestBaseAttr):
                 match_data.append(False)
                 continue
 
-            if group1[i].data.dtype.names is None and group1[i].data.dtype.names is None:
+            if group1[i].data.dtype.names is None and group2[i].data.dtype.names is None:
                 match_data.append(self.check_data(group1[i].data, group2[i].data, indent+'    '))
-            elif group1[i].data.dtype.names is None or group1[i].data.dtype.names is None:
+            elif group1[i].data.dtype.names is None or group2[i].data.dtype.names is None:
                 match_data.append(False)
             else:
                 match = True
                 for f in group1[i].data.dtype.names:
-                    if f not in group2[i].data.detyhpe.names:
+                    if f not in group2[i].data.dtype.names:
                         match = False
-                        break
-                    match = self.check_data(group1[i].data[f], group2[i].data[f], indent+'    ', name=f)
-                    if not match:
-                        break
+                        continue
+                    child_match = self.check_data(group1[i].data[f], group2[i].data[f], indent+'    ', name=f)
+                    match = match and child_match
+                if match:
+                    for f in group2[i].data.dtype.names:
+                        if f not in group1[i].data.dtype.names:
+                            match = False
+                            break
                 match_data.append(match)
 
         return all(match_data), all(match_attr)
@@ -56,15 +60,20 @@ class TestFits(TestBaseAttr):
         from astropy.io import fits
         nc_p = fits.open(file1)
         nc_m = fits.open(file2)
-        match_data, match_attr = self.check_group(nc_p, nc_m)
-        nc_p.close()
-        nc_m.close()
+        try:
+            match_data, match_attr = self.check_group(nc_p, nc_m)
+        finally:
+            nc_p.close()
+            nc_m.close()
         return match_data, match_attr
 
     def do_stat(self, file):
         from astropy.io import fits
         nc_p = fits.open(file)
-        self.stat_group(nc_p)
+        try:
+            self.stat_group(nc_p)
+        finally:
+            nc_p.close()
 
     def stat_group(self, group1, indent=""):
 

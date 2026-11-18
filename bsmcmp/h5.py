@@ -40,7 +40,9 @@ class TestHDF5(TestBaseAttr):
             d1 = group1[k]
             d2 = group2[k]
             if isinstance(v, h5py.Group):
-                match_data, match_attr = self.check_group(d1, d2, indent + '    ')
+                group_match_data, group_match_attr = self.check_group(d1, d2, indent + '    ')
+                match_data = match_data and group_match_data
+                match_attr = match_attr and group_match_attr
             elif isinstance(v, h5py.Dataset):
                 if not self.check_data(d1, d2, indent+'    '):
                     match_data = False
@@ -63,9 +65,11 @@ class TestHDF5(TestBaseAttr):
 
         f1 = h5py.File(file1)
         f2 = h5py.File(file2)
-        match_data, match_attr = self.check_group(f1, f2)
-        f1.close()
-        f2.close()
+        try:
+            match_data, match_attr = self.check_group(f1, f2)
+        finally:
+            f1.close()
+            f2.close()
         return match_data, match_attr
 
     def stat_group(self, group1, indent=""):
@@ -98,8 +102,10 @@ class TestHDF5(TestBaseAttr):
         import h5py
 
         f1 = h5py.File(file)
-        self.stat_group(f1)
-        f1.close()
+        try:
+            self.stat_group(f1)
+        finally:
+            f1.close()
 
 
 @TestHDF5.click_command()

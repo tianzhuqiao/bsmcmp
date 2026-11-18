@@ -65,7 +65,7 @@ class TestNetcdf(TestBaseAttr):
                 continue
             group_data, group_attr = self.check_group(g, group2[k], indent+'    ')
             match_data = match_data and group_data
-            match_attr = match_data and group_attr
+            match_attr = match_attr and group_attr
 
         return match_data, match_attr
 
@@ -73,15 +73,20 @@ class TestNetcdf(TestBaseAttr):
         from netCDF4 import Dataset
         nc_p = Dataset(file1)
         nc_m = Dataset(file2)
-        match_data, match_attr = self.check_group(nc_p, nc_m)
-        nc_p.close()
-        nc_m.close()
+        try:
+            match_data, match_attr = self.check_group(nc_p, nc_m)
+        finally:
+            nc_p.close()
+            nc_m.close()
         return match_data, match_attr
 
     def do_stat(self, file):
         from netCDF4 import Dataset
         nc_p = Dataset(file)
-        self.stat_group(nc_p)
+        try:
+            self.stat_group(nc_p)
+        finally:
+            nc_p.close()
 
     def stat_group(self, group1, indent=""):
 

@@ -36,7 +36,8 @@ class TestCSV(TestBaseGroup):
             d1 = group1[k]
             d2 = group2[k]
             if isinstance(v, MutableMapping):
-                match_data = self.check_group(d1, d2, indent + '    ')
+                group_match_data = self.check_group(d1, d2, indent + '    ')
+                match_data = match_data and group_match_data
             else:
                 if not self.check_data(d1, d2, indent+'    '):
                     match_data = False
@@ -52,25 +53,27 @@ class TestCSV(TestBaseGroup):
 
         return match_data
 
-    def do_test(self, file1, file2):
+    def _load(self, filename):
         from csv import Sniffer
         import pandas as pd
 
-        def _load(filename):
-            encoding = get_file_encoding(filename)
-
-            sep = ','
-            with open(filename, encoding=encoding) as fp:
-                line = fp.readline()
+        encoding = get_file_encoding(filename)
+        sep = ','
+        with open(filename, encoding=encoding) as fp:
+            line = fp.readline()
+            try:
                 s = Sniffer()
                 d = s.sniff(line)
                 sep = d.delimiter
-            csv = pd.read_csv(filename, sep=sep)
-            return csv
+            except:
+                sep = ','
+        csv = pd.read_csv(filename, sep=sep)
+        return csv
 
-        f1 = _load(file1)
-        f2 = _load(file2)
-        if f1 is not None or f2 is not None:
+    def do_test(self, file1, file2):
+        f1 = self._load(file1)
+        f2 = self._load(file2)
+        if f1 is not None and f2 is not None:
             match_data = self.check_group(f1, f2)
         else:
             match_data = False
@@ -98,22 +101,7 @@ class TestCSV(TestBaseGroup):
 
 
     def do_stat(self, file):
-        from csv import Sniffer
-        import pandas as pd
-
-        def _load(filename):
-            encoding = get_file_encoding(filename)
-
-            sep = ','
-            with open(filename, encoding=encoding) as fp:
-                line = fp.readline()
-                s = Sniffer()
-                d = s.sniff(line)
-                sep = d.delimiter
-            csv = pd.read_csv(filename, sep=sep)
-            return csv
-
-        f1 = _load(file)
+        f1 = self._load(file)
         if f1 is not None:
             self.stat_group(f1)
 

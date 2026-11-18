@@ -18,7 +18,7 @@ class TestGeoTiff(TestBaseAttr):
         match_attr = self.check_attr(group1, group2)
 
         # check data and its attributes
-        match_data = True
+        match_data = group1.count == group2.count
         if group1.count == group2.count:
             for k in range(1, group1.count+1):
                 self.start_message_delay()
@@ -50,6 +50,7 @@ class TestGeoTiff(TestBaseAttr):
         import rasterio
         nc_p = rasterio.open(file)
         self.stat_group(nc_p)
+        nc_p.close()
 
     def stat_group(self, group1, indent=""):
 

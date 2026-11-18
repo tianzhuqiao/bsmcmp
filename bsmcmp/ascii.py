@@ -15,10 +15,8 @@ class TestAscii(TestBase):
             self.error(f'Failed to open {filename}')
         return data
 
-    def test(self, file1, file2):
+    def do_test(self, file1, file2):
         import difflib
-
-        super().test(file1, file2)
 
         d1 = self.open_ascii(file1)
         d2 = self.open_ascii(file2)
@@ -26,10 +24,9 @@ class TestAscii(TestBase):
         match = d1 == d2
 
         if not match:
-            self.mismatch_count += 1
-            if self.verbose >= self.LOG_ERROR:
-                for line in difflib.ndiff(d1, d2):
-                    self.error(line, nl=False, fg=None)
+            for line in difflib.ndiff(d1, d2):
+                self.error(line, nl=False, fg=None)
+
         return match
 
 
